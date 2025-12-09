@@ -12,14 +12,18 @@ RUN sed -i 's/process.exit(1);/process.exit(0);/g' \
 EXPOSE 3000
 
 # Create startup script to configure nginx before starting my_init
-RUN echo '#!/bin/bash
+RUN cat << 'EOF' > /start.sh
+#!/bin/bash
 set -e
 PORT_RUN="${PORT:-3000}"
 echo "Configuring nginx to listen on port ${PORT_RUN}"
 sed -i "s/listen 80;/listen ${PORT_RUN};/" /etc/nginx/sites-available/sharelatex || true
-sed -i "s/listen \\[::\\]:80;/listen \\[::\\]:${PORT_RUN};/" /etc/nginx/sites-available/sharelatex || true
+sed -i "s/listen \[::\]:80;/listen \[::\]:${PORT_RUN};/" /etc/nginx/sites-available/sharelatex || true
 echo "Starting my_init..."
-exec /sbin/my_init' > /start.sh && chmod +x /start.sh
+exec /sbin/my_init
+EOF
+
+RUN chmod +x /start.sh
 
 # Use the startup script
 CMD ["/start.sh"]
