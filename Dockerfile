@@ -1,9 +1,10 @@
-FROM sharelatex/sharelatex:latest
+FROM overleaf/overleaf:latest
 
-# Xóa script kiểm tra MongoDB
-RUN rm -f /etc/my_init.d/500_check_db_access.sh
+RUN rm -f /etc/my_init.d/500_check_db_access.sh || true
 
-# Không patch nginx, để Railway Port Proxy xử lý
+RUN mkdir -p /var/run/supervise && \
+    chmod 755 /var/run/supervise
+
 ENV OVERLEAF_LISTEN_IP=0.0.0.0
 ENV OVERLEAF_PORT=80
 
