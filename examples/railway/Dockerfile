@@ -1,23 +1,14 @@
-# Minimal Overleaf CE image for Railway: adjust nginx to listen on $PORT
-# Use latest Overleaf CE tag (Railway may have issues with specific version tags)
-FROM sharelatex/sharelatex:latest
+ARG OVERLEAF_VERSION=6.0.0
 
-# Railway injects PORT via environment variable
-ENV PORT=3000
+# Base image for Overleaf Community Edition. Override OVERLEAF_VERSION in Railway
+# variables if you pin a different toolkit config/version.
+FROM sharelatex/sharelatex:${OVERLEAF_VERSION}
 
-# Expose the port Railway will use
-EXPOSE 3000
+# Reuse the toolkit start script that patches nginx to listen on $PORT (Railway
+# provides this env var).
+COPY start.sh /usr/local/bin/start-railway.sh
 
-# Create startup script to configure nginx before starting my_init
-RUN echo '#!/bin/bash\n\
-set -e\n\
-PORT_RUN="${PORT:-3000}"\n\
-echo "Configuring nginx to listen on port ${PORT_RUN}"\n\
-sed -i "s/listen 80;/listen ${PORT_RUN};/" /etc/nginx/sites-available/sharelatex || true\n\
-sed -i "s/listen \\[::\\]:80;/listen \\[::\\]:${PORT_RUN};/" /etc/nginx/sites-available/sharelatex || true\n\
-echo "Starting my_init..."\n\
-exec /sbin/my_init' > /start.sh && chmod +x /start.sh
+RUN chmod +x /usr/local/bin/start-railway.sh
 
-# Use the startup script
-CMD ["/start.sh"]
+CMD ["/usr/local/bin/start-railway.sh"]
 
