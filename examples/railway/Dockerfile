@@ -2,12 +2,22 @@
 # Use a current Overleaf CE tag (matches toolkit seed version)
 FROM sharelatex/sharelatex:6.0.1
 
+# Railway injects PORT via environment variable
 ENV PORT=3000
 
-# Override entrypoint so we can edit nginx config before starting my_init
-ENTRYPOINT ["/bin/bash", "-lc"]
-CMD "PORT_RUN=\"${PORT:-3000}\" && \
- sed -i \"s/listen 80;/listen ${PORT_RUN};/\" /etc/nginx/sites-available/sharelatex && \
- sed -i \"s/listen \\[::\\]:80;/listen \\[::\\]:${PORT_RUN};/\" /etc/nginx/sites-available/sharelatex && \
- exec /sbin/my_init"
+# Expose the port Railway will use
+EXPOSE 3000
+
+# Create startup script to configure nginx before starting my_init
+RUN echo '#!/bin/bash\n\
+set -e\n\
+PORT_RUN="${PORT:-3000}"\n\
+echo "Configuring nginx to listen on port ${PORT_RUN}"\n\
+sed -i "s/listen 80;/listen ${PORT_RUN};/" /etc/nginx/sites-available/sharelatex || true\n\
+sed -i "s/listen \\[::\\]:80;/listen \\[::\\]:${PORT_RUN};/" /etc/nginx/sites-available/sharelatex || true\n\
+echo "Starting my_init..."\n\
+exec /sbin/my_init' > /start.sh && chmod +x /start.sh
+
+# Use the startup script
+CMD ["/start.sh"]
 
