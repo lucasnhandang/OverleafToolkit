@@ -6,7 +6,8 @@ ENV PORT=3000
 
 # Override entrypoint so we can edit nginx config before starting my_init
 ENTRYPOINT ["/bin/bash", "-lc"]
-CMD "sed -i 's/listen 80;/listen ${PORT};/' /etc/nginx/sites-available/sharelatex && \
- sed -i 's/listen \\[::\\]:80;/listen \\[::\\]:${PORT};/' /etc/nginx/sites-available/sharelatex && \
+CMD "PORT_RUN=\"${PORT:-3000}\" && \
+ sed -i \"s/listen 80;/listen ${PORT_RUN};/\" /etc/nginx/sites-available/sharelatex && \
+ sed -i \"s/listen \\[::\\]:80;/listen \\[::\\]:${PORT_RUN};/\" /etc/nginx/sites-available/sharelatex && \
  exec /sbin/my_init"
 
