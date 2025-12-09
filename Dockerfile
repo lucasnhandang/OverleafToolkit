@@ -12,8 +12,8 @@ RUN sed -i 's/process.exit(1);/process.exit(0);/g' \
 # Expose the same port as fly.toml internal_port
 EXPOSE 3000
 
-# Create startup script via heredoc so Docker doesn't misinterpret "set -e"
-RUN cat << 'EOF' > /start.sh
+# Create startup script - use EOF in quotes to prevent expansion
+RUN cat << 'EOFSCRIPT' > /start.sh
 #!/bin/bash
 set -e
 
@@ -26,7 +26,7 @@ sed -i "s/listen \[::\]:80;/listen \[::\]:${PORT_RUN};/" /etc/nginx/sites-availa
 
 echo "Starting my_init..."
 exec /sbin/my_init
-EOF
+EOFSCRIPT
 
 RUN chmod +x /start.sh
 
