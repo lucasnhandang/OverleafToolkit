@@ -1,5 +1,6 @@
 # Minimal Overleaf CE image for Railway: adjust nginx to listen on $PORT
-FROM sharelatex/sharelatex:3.0.3
+# Use a current Overleaf CE tag (matches toolkit seed version)
+FROM sharelatex/sharelatex:6.0.1
 
 ENV PORT=3000
 
